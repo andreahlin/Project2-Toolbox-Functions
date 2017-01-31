@@ -22,6 +22,7 @@ import Framework from './framework'
 var guiItems = function() {
   this.wind = 0.0;
   this.shape = 1.0;
+  this.size = 1.0; 
   this.distribution = 1.0;
   this.color = 0.5;
   this.orientation = 0.0;
@@ -93,15 +94,15 @@ function onLoad(framework) {
         scene.add(featherMesh);
 
         // add feathers based on the spline positions
-        for (var i = 1; i < 100; i ++) {
+        for (var i = 0; i < 100; i ++) {
             // feather 1 
             var feath = new THREE.Mesh(featherGeo, featherMaterial);
             feath.position.set(splinePoints1[i * featherDistrib].x, 
                                splinePoints1[i * featherDistrib].y, 
                                splinePoints1[i * featherDistrib].z);
-            feath.name = "spline1";
-            var dSize = (100 - i) / 25.0; 
-            feath.scale.set(featherSize,featherSize,featherSize);
+            feath.name = "" + i;
+            var dSize = (100 - i) / 100.0; 
+            feath.scale.set(featherSize * dSize,featherSize,featherSize);
             feath.rotation.set(0 , 0 + featherOrientation , 0.1);
             scene.add(feath);
 
@@ -110,7 +111,7 @@ function onLoad(framework) {
             feath2.position.set(splinePoints2[i * featherDistrib].x , 
                 splinePoints2[i * featherDistrib].y - .1, 
                 splinePoints2[i * featherDistrib].z);
-            feath2.name = "spline2";
+            feath2.name = "" + (100 + i);
             feath2.scale.set(featherSize * 1.4,featherSize * 1.4, featherSize * 1.4) ;
             feath2.rotation.set(0 , 0 + featherOrientation, 0.1);
             scene.add(feath2);
@@ -120,7 +121,7 @@ function onLoad(framework) {
             feath3.position.set(splinePoints3[i * featherDistrib].x , 
                 splinePoints3[i * featherDistrib].y - .2, 
                 splinePoints3[i * featherDistrib].z);
-            feath3.name = "spline3";
+            feath3.name = "" + (200 + i);
             feath3.scale.set(featherSize * 1.4,featherSize * 1.4, featherSize * 1.4) ;
             feath3.rotation.set(0 , 0 + featherOrientation , 0.1);
             scene.add(feath3);
@@ -134,6 +135,7 @@ var numPoints = 100;
 // first spline
 var spline1 = new THREE.SplineCurve3([
     new THREE.Vector3(0,0,0),
+    new THREE.Vector3(1,0,-2),
     new THREE.Vector3(3,0,-15),
     new THREE.Vector3(12,0,-30)
 ]);
@@ -201,15 +203,42 @@ scene.add(axis);
     var items = new guiItems(); 
     gui.add(items, "wind", 0.0, 1.0);
     gui.add(items, "shape", 0.0, 1.0);
-    gui.add(items, "distribution", 0.0, 5.0).onChange(function(newVal) {
-        featherDistrib = newVal;
-        for (var i = 0; i < 100; i++) {
-            var feather = framework.scene.getObjectByName("spline 1 "); 
-            feather.rotateY(newVal);   
-        }
 
+    gui.add(items, "color", -1.0, 1.0).onChange(function(newVal) {
+        featherMaterial.uniforms.u_color.value = newVal;
     });
-    gui.add(items, "orientation", 0.0, 1.0);
+
+    gui.add(items, "size", 1.0, 5.0).onChange(function(newVal) {
+        featherDistrib = newVal;
+        for (var i = 0; i < 300; i++) {
+            var feather = framework.scene.getObjectByName("" + i);
+            if (feather !== undefined) {
+                feather.scale.set(newVal, newVal, newVal);
+            } 
+        }
+    });
+
+
+    gui.add(items, "distribution", 0.0, 6.0).onChange(function(newVal) {
+        featherDistrib = newVal;
+        for (var i = 0; i < 300; i++) {
+            var feather = framework.scene.getObjectByName("" + i);
+            if (feather !== undefined) {
+                feather.position.set(1, newVal, 1);
+            } 
+        }
+    });
+
+    gui.add(items, "orientation", -1.0, 1.0).onChange(function(newVal) {
+        featherDistrib = newVal;
+        for (var i = 0; i < 300; i++) {
+            var feather = framework.scene.getObjectByName("" + i);
+            if (feather !== undefined) {
+                feather.rotation.set(0, newVal,0);   
+            } 
+        }
+    });
+
     gui.add(items, "flapping", 0.0, 1.0);
 }
 
@@ -219,7 +248,7 @@ function onUpdate(framework) {
     if (feather !== undefined) {
         // Simply flap wing
         var date = new Date();
-        
+
         // take out animation temporarily here: 
         // feather.rotateZ(Math.sin(date.getTime() / 100) * 2 * Math.PI / 180);        
     }
