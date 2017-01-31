@@ -21,9 +21,9 @@ import Framework from './framework'
 // GUI STUFF
 var guiItems = function() {
   this.wind = 0.0;
-  this.shape = 1.0;
+  this.shape = 4.0;
   this.size = 1.0; 
-  this.distribution = 0.0;
+  this.distribution = 2;
   this.color = 0.5;
   this.orientation = 0.0;
   this.speed = 0.0;
@@ -40,6 +40,8 @@ var featherDistrib = 2.0;
 var featherSize = 3.0; 
 var featherOrientation = 0; 
 var wingFlap = 1.0; 
+var windStrength = 0.0; 
+var wingShape = 4.0; 
 
 // animated wing object, to be used later
 function animatedWing(con1, con2, con3) {
@@ -80,7 +82,7 @@ function onLoad(framework) {
     ] );
 
     // take out skybox temporarily here: 
-    // scene.background = skymap;
+    scene.background = skymap;
 
     // load a simple obj mesh
     // FEATHER BODY = 2.0 units long
@@ -129,7 +131,6 @@ function onLoad(framework) {
             scene.add(feath3);
         }
     });
-
 //-----------------------------------------------------------------------------
 // CREATE BASIC CURVE
 var numPoints = 100;
@@ -186,8 +187,8 @@ for(var i = 0; i < splinePoints3.length; i++){
 // scene.add(line);
 
 // include an axis for visualization help 
-var axis = new THREE.AxisHelper(75);
-scene.add(axis);     
+// var axis = new THREE.AxisHelper(75);
+// scene.add(axis);     
 //-----------------------------------------------------------------------------
     // set camera position
     camera.position.set(1, 10, 10);
@@ -203,8 +204,14 @@ scene.add(axis);
     });
 
     var items = new guiItems(); 
-    gui.add(items, "wind", 0.0, 1.0);
-    gui.add(items, "shape", 0.0, 1.0);
+    gui.add(items, "wind", 0.0, 3.0).onChange(function(newVal) {
+        windStrength = newVal;
+    });
+
+
+    gui.add(items, "shape", 4.0, 10.0).onChange(function(newVal) {
+        wingShape = newVal;
+    });
 
     gui.add(items, "color", -1.0, 1.0).onChange(function(newVal) {
         featherMaterial.uniforms.u_color.value = newVal;
@@ -220,17 +227,15 @@ scene.add(axis);
         }
     });
 
-    //DISPLACE THE
-
     // FIX DISTRIBUtiON FUNCTION... 
-    gui.add(items, "distribution", 0.0, 2.0).onChange(function(newVal) {
-        for (var i = 0; i < 300; i++) {
-            var feather = framework.scene.getObjectByName("" + i);
-            if (feather !== undefined) {
-                feather.position.set(feather.position.x, feather.position.y, feather.position.z * (newVal + 1.0));
-            } 
-        }
-    });
+    // gui.add(items, "distribution", 1.0, 2.0).step(0.5).onChange(function(newVal) {
+    //     for (var i = 0; i < 300; i++) {
+    //         var feather = framework.scene.getObjectByName("" + i);
+    //         if (feather !== undefined) {
+    //             feather.position.set(feather.position.x, feather.position.y, feather.position.z * (newVal));
+    //         } 
+    //     }
+    // });
 
     gui.add(items, "orientation", -1.0, 1.0).onChange(function(newVal) {
         for (var i = 0; i < 300; i++) {
@@ -244,7 +249,6 @@ scene.add(axis);
     gui.add(items, "flapping", 0.0, 5.0).onChange(function(newVal) {
         wingFlap = newVal;
     });
-
 }
 
 // called on frame updates
@@ -262,7 +266,33 @@ function onUpdate(framework) {
             for (var i = 0; i < 300; i++) {
             var feather = framework.scene.getObjectByName("" + i);
             if (feather !== undefined) {
-                feather.rotateZ(Math.sin(x / 200.0) * -(1 * wingFlap) * Math.PI / 180);        
+                // set the y positions of the feathers
+                if (i < 100) {
+                    feather.position.set(feather.position.x, 
+                    - Math.cos(feather.position.z / wingShape + 2.0) + 0.1, 
+                    feather.position.z);   
+
+                } else if (i < 200) {
+                    feather.position.set(feather.position.x, 
+                    - Math.cos(feather.position.z / wingShape + 2.0) - 0.2, 
+                    feather.position.z);   
+
+                } else {
+                    feather.position.set(feather.position.x, 
+                    - Math.cos(feather.position.z / wingShape + 2.0) - 0.7, 
+                    feather.position.z);   
+                }
+
+                // Define animation of the wing: 
+                // render without any wind
+                if (windStrength < 1.0) {
+                    feather.rotateZ(Math.sin(x / 200.0) * - (1.0 * wingFlap) * Math.PI / 180 );        
+                }
+                // render with wind
+                else {
+                    // var newX = cubicPulse(1.0, 0.5, feather.position.z);
+                    feather.rotateY(Math.sin(x * (i % (windStrength)) / 200.0) * -(0.9 * wingFlap) * Math.PI / 90);        
+                }
             } 
         }
 }
@@ -285,7 +315,7 @@ function smoothstep(a, b, x) {
 // c = centering
 // w = taper length
 function cubicPulse(c, w, x) {
-    x = abs(x - c);
+    x = Math.abs(x - c);
     if (x > w) { return 0.0; }
     x /= w;
     return 1.0 - x * x * (3.0 - 2.0 * x);
