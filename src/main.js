@@ -21,9 +21,9 @@ import Framework from './framework'
 // GUI STUFF
 var guiItems = function() {
   this.wind = 0.0;
-  this.shape = 0.0;
-  this.distribution = 0.0;
-  this.color = 0.0;
+  this.shape = 1.0;
+  this.distribution = 1.0;
+  this.color = 0.5;
   this.orientation = 0.0;
   this.speed = 0.0;
   this.flapping = 0.0; 
@@ -32,16 +32,15 @@ var guiItems = function() {
 // Uniform time to be sent to shader
 var totalTime = 0.0; 
 
-// var that stores the points on the spline to put a feather on it
-var feathPos = []; 
-
-// constrain the size of the wing : find a length constraint (i.e. 10.0 units)
-// when resiing the feather distribution and size, if the feather ends up outside of the 
-// constraint then do not display it. 
-var lengthConstrain = 20.0;
+// adjust the feather distribution by changing ratio of distance between each
+// todo: make these two variable user adjustable
+// var finalFeatherCollection = [];
+var featherDistrib = 2.0; 
+var featherSize = 3.0; 
+var featherOrientation = 0; 
 
 // animated wing object, to be used later
-function animateWing(con1, con2, con3) {
+function animatedWing(con1, con2, con3) {
 // use each of the control points to draw spheres on the wing
 // manipulate them so that you can change them 
     this.control1 = con1;
@@ -93,63 +92,99 @@ function onLoad(framework) {
         featherMesh.name = "feather";
         scene.add(featherMesh);
 
-        // adjust the feather distribution by changing ratio of distance between each
-        // todo: make this variable user adjustable
-        var featherDistrib = 1 / 4.0; 
-
-        // create a multitude of feathers
-        // for (var i = 1; i <= 20; i++) {
-        //     var feath = new THREE.Mesh(featherGeo, lambertWhite);
-        //     feath.name = "newFeath: " + i;
-        //     feath.position.set(0, 0, i * featherDistrib);
-        //     scene.add(feath);
-        // }
-        
         // add feathers based on the spline positions
-        for (var i = 0; i < feathPos.length; i ++) {
-            var feath = new THREE.Mesh(featherGeo, lambertWhite);
-            feath.name = "newFeath: " + i;
-            feath.position.set(feathPos[i].x, feathPos[i].y, feathPos[i].z);
-        }
+        for (var i = 1; i < 100; i ++) {
+            // feather 1 
+            var feath = new THREE.Mesh(featherGeo, featherMaterial);
+            feath.position.set(splinePoints1[i * featherDistrib].x, 
+                               splinePoints1[i * featherDistrib].y, 
+                               splinePoints1[i * featherDistrib].z);
+            feath.name = "spline1";
+            var dSize = (100 - i) / 25.0; 
+            feath.scale.set(featherSize,featherSize,featherSize);
+            feath.rotation.set(0 , 0 + featherOrientation , 0.1);
+            scene.add(feath);
 
+            // feather 2 
+            var feath2 = new THREE.Mesh(featherGeo, featherMaterial);
+            feath2.position.set(splinePoints2[i * featherDistrib].x , 
+                splinePoints2[i * featherDistrib].y - .1, 
+                splinePoints2[i * featherDistrib].z);
+            feath2.name = "spline2";
+            feath2.scale.set(featherSize * 1.4,featherSize * 1.4, featherSize * 1.4) ;
+            feath2.rotation.set(0 , 0 + featherOrientation, 0.1);
+            scene.add(feath2);
+
+            // feather 3
+            var feath3 = new THREE.Mesh(featherGeo, featherMaterial);
+            feath3.position.set(splinePoints3[i * featherDistrib].x , 
+                splinePoints3[i * featherDistrib].y - .2, 
+                splinePoints3[i * featherDistrib].z);
+            feath3.name = "spline3";
+            feath3.scale.set(featherSize * 1.4,featherSize * 1.4, featherSize * 1.4) ;
+            feath3.rotation.set(0 , 0 + featherOrientation , 0.1);
+            scene.add(feath3);
+        }
     });
+
 //-----------------------------------------------------------------------------
 // CREATE BASIC CURVE
 var numPoints = 100;
 
-var p1 = new THREE.Vector3(0,0,0);
-var p2 = new THREE.Vector3(3,0,15);
-var p3 = new THREE.Vector3(12,0,30);
-
-// add these points to the member array
-feathPos.push(p1);
-feathPos.push(p2);
-feathPos.push(p3); 
-
-var spline = new THREE.SplineCurve3([
-    p1, p2, p3 
-   // new THREE.Vector3(0, 0, 0),
-   // new THREE.Vector3(0, 0, 50),
-   // new THREE.Vector3(75, 0, 75),
-
-   // new THREE.Vector3(0, 200, 0),
-   // new THREE.Vector3(150, 150, 0),
-   // new THREE.Vector3(150, 50, 0),
-   // new THREE.Vector3(250, 100, 0),
-   // new THREE.Vector3(250, 300, 0)
+// first spline
+var spline1 = new THREE.SplineCurve3([
+    new THREE.Vector3(0,0,0),
+    new THREE.Vector3(3,0,-15),
+    new THREE.Vector3(12,0,-30)
 ]);
 
 var geometry = new THREE.Geometry();
-var splinePoints = spline.getPoints(numPoints);
+var splinePoints1 = spline1.getPoints(numPoints);
 
-for(var i = 0; i < splinePoints.length; i++){
-    geometry.vertices.push(splinePoints[i]);  
+for(var i = 0; i < splinePoints1.length; i++){
+    geometry.vertices.push(splinePoints1[i]);  
 }
 
 var line = new THREE.Line(geometry, lambertWhite);
 scene.add(line);
-//-----------------------------------------------------------------------------
 
+// second spline
+var spline2 = new THREE.SplineCurve3([
+    new THREE.Vector3(0,0,1),
+    new THREE.Vector3(4,0,-15),
+    new THREE.Vector3(13,0,-30)
+]);
+
+var geometry2 = new THREE.Geometry();
+var splinePoints2 = spline2.getPoints(numPoints);
+
+for(var i = 0; i < splinePoints2.length; i++){
+    geometry2.vertices.push(splinePoints2[i]);  
+}
+
+line = new THREE.Line(geometry2, lambertWhite);
+scene.add(line);
+
+// third spline
+var spline3 = new THREE.SplineCurve3([
+    new THREE.Vector3(2,0,0),
+    new THREE.Vector3(8,0,-22)
+]);
+
+var geometry3 = new THREE.Geometry();
+var splinePoints3 = spline3.getPoints(numPoints);
+
+for(var i = 0; i < splinePoints3.length; i++){
+    geometry3.vertices.push(splinePoints3[i]);  
+}
+
+line = new THREE.Line(geometry3, lambertWhite);
+scene.add(line);
+
+// include an axis for visualization help 
+var axis = new THREE.AxisHelper(75);
+scene.add(axis);     
+//-----------------------------------------------------------------------------
     // set camera position
     camera.position.set(0, 1, 5);
     camera.lookAt(new THREE.Vector3(0,0,0));
@@ -166,8 +201,14 @@ scene.add(line);
     var items = new guiItems(); 
     gui.add(items, "wind", 0.0, 1.0);
     gui.add(items, "shape", 0.0, 1.0);
-    gui.add(items, "distribution", 0.0, 1.0);
-    gui.add(items, "color", 0.0, 1.0);
+    gui.add(items, "distribution", 0.0, 5.0).onChange(function(newVal) {
+        featherDistrib = newVal;
+        for (var i = 0; i < 100; i++) {
+            var feather = framework.scene.getObjectByName("spline 1 "); 
+            feather.rotateY(newVal);   
+        }
+
+    });
     gui.add(items, "orientation", 0.0, 1.0);
     gui.add(items, "flapping", 0.0, 1.0);
 }
@@ -178,7 +219,7 @@ function onUpdate(framework) {
     if (feather !== undefined) {
         // Simply flap wing
         var date = new Date();
-
+        
         // take out animation temporarily here: 
         // feather.rotateZ(Math.sin(date.getTime() / 100) * 2 * Math.PI / 180);        
     }
@@ -188,11 +229,23 @@ function onUpdate(framework) {
 Framework.init(onLoad, onUpdate);
 
 // toolbox functions
-function smoothstep(edge0, edge1, x) {
-    x = sin((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+function lerp(a, b, t) {
+    return (1- a) * t + b * t; 
+}
+
+function smoothstep(a, b, x) {
+    x = clamp((x - a) / (b - a), 0.0, 1.0);
     return x * x * (3 - 2 * x);
 }
 
+// c = centering
+// w = taper length
+function cubicPulse(c, w, x) {
+    x = abs(x - c);
+    if (x > w) { return 0.0; }
+    x /= w;
+    return 1.0 - x * x * (3.0 - 2.0 * x);
+}
 
 
 

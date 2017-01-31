@@ -25,7 +25,7 @@ void main() {
 	// Pretty blue : 0.607, 0.909, 0.898
 	vec4 baseCol = vec4(turq.x + vNormal.x / 10.0 , turq.y + vNormal.y / 10.0, turq.z + vNormal.z / 10.0 , 1.0);
 
-	vec4 lerpCol = vec4(.5,x + .2,x + .4,1.0);
+	vec4 lerpCol = vec4(.5 * (1.0 - u_color), x + .2 ,x + .4,1.0);
 	
 	// Color based on surface normals 
     // vec4 color = vec4(vNormal.x, vNormal.y, vNormal.z, 1.0);
