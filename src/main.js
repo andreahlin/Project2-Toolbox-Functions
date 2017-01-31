@@ -220,9 +220,8 @@ scene.add(axis);
         }
     });
 
-
+    // FIX DISTRIBUtiON FUNCTION... 
     gui.add(items, "distribution", 0.0, 2.0).onChange(function(newVal) {
-        // featherOrientation = newVal;
         for (var i = 0; i < 300; i++) {
             var feather = framework.scene.getObjectByName("" + i);
             if (feather !== undefined) {
@@ -232,7 +231,6 @@ scene.add(axis);
     });
 
     gui.add(items, "orientation", -1.0, 1.0).onChange(function(newVal) {
-        // featherDistrib = newVal;
         for (var i = 0; i < 300; i++) {
             var feather = framework.scene.getObjectByName("" + i);
             if (feather !== undefined) {
@@ -256,7 +254,7 @@ function onUpdate(framework) {
     //     feather.rotateZ(Math.sin(date.getTime() / 100) * 2 * Math.PI / 180);        
     // }
     
-    // move the entire wing 
+    // move the entire wing based on simple animation
             var date = new Date();
             for (var i = 0; i < 300; i++) {
             var feather = framework.scene.getObjectByName("" + i);
