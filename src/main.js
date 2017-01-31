@@ -16,8 +16,8 @@ import Framework from './framework'
   });
 
 // GUI FOR:
-// Wing speed, curvature of the wing's basic shape, Feather distribution
-// Feather size, Feather color, Feather orientation, Flapping speed, Flapping motion
+// Wing speed, curvature of the wing's basic shape, feather size,
+// Feather color, Feather orientation, Flapping speed, Flapping motion
 var guiItems = function() {
   this.wind = 0.0;
   this.shape = 4.0;
@@ -41,17 +41,6 @@ var featherOrientation = 0;
 var wingFlap = 1.0; 
 var windStrength = 0.0; 
 var wingShape = 4.0; 
-
-// animated wing object, to be used later
-function animatedWing(con1, con2, con3) {
-// use each of the control points to draw spheres on the wing
-// manipulate them so that you can change them 
-    this.control1 = con1;
-    this.control2 = con2;
-    this.control3 = con3;
-    this.color = 1.0; 
-}
-
 //-----------------------------------------------------------------------------
 // called after the scene loads
 function onLoad(framework) {
@@ -72,7 +61,7 @@ function onLoad(framework) {
 
     // set skybox
     var loader = new THREE.CubeTextureLoader();
-    var urlPrefix = '/images/skymap/';
+    var urlPrefix = 'images/skymap/';
 
     var skymap = new THREE.CubeTextureLoader().load([
         urlPrefix + 'px.jpg', urlPrefix + 'nx.jpg',
@@ -84,21 +73,15 @@ function onLoad(framework) {
     scene.background = skymap;
 
     // load a simple obj mesh
-    // FEATHER BODY = 2.0 units long
     var objLoader = new THREE.OBJLoader();
     objLoader.load('/geo/feather.obj', function(obj) {
 
         // LOOK: This function runs after the obj has finished loading
         var featherGeo = obj.children[0].geometry;
 
-        // initial single feather mesh
-        // var featherMesh = new THREE.Mesh(featherGeo, featherMaterial);
-        // featherMesh.name = "feather";
-        // scene.add(featherMesh);
-
         // add feathers based on the spline positions
         for (var i = 0; i < 100; i ++) {
-            // feather 1 
+            // spline 1 
             var feath = new THREE.Mesh(featherGeo, featherMaterial);
             feath.position.set(splinePoints1[i * featherDistrib].x, 
                                splinePoints1[i * featherDistrib].y, 
@@ -109,7 +92,7 @@ function onLoad(framework) {
             feath.rotation.set(0 , 0 + featherOrientation , 0.1);
             scene.add(feath);
 
-            // feather 2 
+            // spline 2 
             var feath2 = new THREE.Mesh(featherGeo, featherMaterial);
             feath2.position.set(splinePoints2[i * featherDistrib].x , 
                 splinePoints2[i * featherDistrib].y - 0.3, 
@@ -119,7 +102,7 @@ function onLoad(framework) {
             feath2.rotation.set(0 , 0 + featherOrientation, 0.1);
             scene.add(feath2);
 
-            // feather 3
+            // spline 3
             var feath3 = new THREE.Mesh(featherGeo, featherMaterial);
             feath3.position.set(splinePoints3[i * featherDistrib].x , 
                 splinePoints3[i * featherDistrib].y - 0.7, 
@@ -148,7 +131,6 @@ var splinePoints1 = spline1.getPoints(numPoints);
 for(var i = 0; i < splinePoints1.length; i++){
     geometry.vertices.push(splinePoints1[i]);  
 }
-
 // var line = new THREE.Line(geometry, lambertWhite);
 // scene.add(line);
 
@@ -165,7 +147,6 @@ var splinePoints2 = spline2.getPoints(numPoints);
 for(var i = 0; i < splinePoints2.length; i++){
     geometry2.vertices.push(splinePoints2[i]);  
 }
-
 // line = new THREE.Line(geometry2, lambertWhite);
 // scene.add(line);
 
@@ -181,7 +162,6 @@ var splinePoints3 = spline3.getPoints(numPoints);
 for(var i = 0; i < splinePoints3.length; i++){
     geometry3.vertices.push(splinePoints3[i]);  
 }
-
 // line = new THREE.Line(geometry3, lambertWhite);
 // scene.add(line);
 
@@ -202,11 +182,11 @@ for(var i = 0; i < splinePoints3.length; i++){
         camera.updateProjectionMatrix();
     });
 
+    // GUI Items 
     var items = new guiItems(); 
     gui.add(items, "wind", 0.0, 3.0).onChange(function(newVal) {
         windStrength = newVal;
     });
-
 
     gui.add(items, "shape", 4.0, 10.0).onChange(function(newVal) {
         wingShape = newVal;
@@ -226,16 +206,6 @@ for(var i = 0; i < splinePoints3.length; i++){
         }
     });
 
-    // FIX DISTRIBUtiON FUNCTION... 
-    // gui.add(items, "distribution", 1.0, 2.0).step(0.5).onChange(function(newVal) {
-    //     for (var i = 0; i < 300; i++) {
-    //         var feather = framework.scene.getObjectByName("" + i);
-    //         if (feather !== undefined) {
-    //             feather.position.set(feather.position.x, feather.position.y, feather.position.z * (newVal));
-    //         } 
-    //     }
-    // });
-
     gui.add(items, "orientation", -1.0, 1.0).onChange(function(newVal) {
         for (var i = 0; i < 300; i++) {
             var feather = framework.scene.getObjectByName("" + i);
@@ -251,14 +221,7 @@ for(var i = 0; i < splinePoints3.length; i++){
 }
 
 // called on frame updates
-function onUpdate(framework) {
-    // var feather = framework.scene.getObjectByName("feather");    
-    // if (feather !== undefined) {
-    //     // Simply flap wing
-    //    // take out animation temporarily here: 
-    //     feather.rotateZ(Math.sin(date.getTime() / 100) * 2 * Math.PI / 180);        
-    // }
-    
+function onUpdate(framework) {    
     // move the entire wing based on simple animation
             var date = new Date();
             var x = date.getTime();
@@ -289,7 +252,6 @@ function onUpdate(framework) {
                 }
                 // render with wind
                 else {
-                    // var newX = cubicPulse(1.0, 0.5, feather.position.z);
                     feather.rotateY(Math.sin(x * (i % (windStrength)) / 200.0) * -(0.9 * wingFlap) * Math.PI / 90);        
                 }
             } 
@@ -298,9 +260,7 @@ function onUpdate(framework) {
 
 // when the scene is done initializing, it will call onLoad, then on frame updates, call onUpdate
 Framework.init(onLoad, onUpdate);
-
 //-----------------------------------------------------------------------------
-
 // toolbox functions
 function lerp(a, b, t) {
     return (1- a) * t + b * t; 
@@ -319,7 +279,3 @@ function cubicPulse(c, w, x) {
     x /= w;
     return 1.0 - x * x * (3.0 - 2.0 * x);
 }
-
-
-
-
