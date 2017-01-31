@@ -18,7 +18,6 @@ import Framework from './framework'
 // GUI FOR:
 // Wing speed, curvature of the wing's basic shape, Feather distribution
 // Feather size, Feather color, Feather orientation, Flapping speed, Flapping motion
-// GUI STUFF
 var guiItems = function() {
   this.wind = 0.0;
   this.shape = 4.0;
