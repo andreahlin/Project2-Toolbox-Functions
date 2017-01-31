@@ -190,8 +190,8 @@ var axis = new THREE.AxisHelper(75);
 scene.add(axis);     
 //-----------------------------------------------------------------------------
     // set camera position
-    camera.position.set(0, 1, 5);
-    camera.lookAt(new THREE.Vector3(0,0,0));
+    camera.position.set(1, 10, 10);
+    camera.lookAt(new THREE.Vector3(4,0,-5));
 
     // scene.add(lambertCube);
     scene.add(directionalLight);
@@ -219,6 +219,8 @@ scene.add(axis);
             } 
         }
     });
+
+    //DISPLACE THE
 
     // FIX DISTRIBUtiON FUNCTION... 
     gui.add(items, "distribution", 0.0, 2.0).onChange(function(newVal) {
@@ -256,16 +258,19 @@ function onUpdate(framework) {
     
     // move the entire wing based on simple animation
             var date = new Date();
+            var x = date.getTime();
             for (var i = 0; i < 300; i++) {
             var feather = framework.scene.getObjectByName("" + i);
             if (feather !== undefined) {
-                feather.rotateZ(Math.sin(date.getTime() / 200.0) * -(1 * wingFlap) * Math.PI / 180);        
+                feather.rotateZ(Math.sin(x / 200.0) * -(1 * wingFlap) * Math.PI / 180);        
             } 
         }
 }
 
 // when the scene is done initializing, it will call onLoad, then on frame updates, call onUpdate
 Framework.init(onLoad, onUpdate);
+
+//-----------------------------------------------------------------------------
 
 // toolbox functions
 function lerp(a, b, t) {
