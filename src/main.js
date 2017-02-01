@@ -37,10 +37,28 @@ var totalTime = 0.0;
 // var finalFeatherCollection = [];
 var featherDistrib = 2.0; 
 var featherSize = 3.0; 
-var featherOrientation = 0; 
 var wingFlap = 1.0; 
 var windStrength = 0.0; 
 var wingShape = 4.0; 
+//-----------------------------------------------------------------------------
+// toolbox functions
+function lerp(a, b, t) {
+    return a * (1- t) + b * t; 
+}
+
+function smoothstep(a, b, x) {
+    x = clamp((x - a) / (b - a), 0.0, 1.0);
+    return x * x * (3 - 2 * x);
+}
+
+// c = centering
+// w = taper length
+function cubicPulse(c, w, x) {
+    x = Math.abs(x - c);
+    if (x > w) { return 0.0; }
+    x /= w;
+    return 1.0 - x * x * (3.0 - 2.0 * x);
+}
 //-----------------------------------------------------------------------------
 // called after the scene loads
 function onLoad(framework) {
@@ -75,9 +93,11 @@ function onLoad(framework) {
     // load a simple obj mesh
     var objLoader = new THREE.OBJLoader();
     objLoader.load('geo/feather.obj', function(obj) {
+        // Project2-Toolbox-Functions/blob/master/geo/feather.obj
 
         // LOOK: This function runs after the obj has finished loading
         var featherGeo = obj.children[0].geometry;
+        // var featherOrientation = 0.0; 
 
         // add feathers based on the spline positions
         for (var i = 0; i < 100; i ++) {
@@ -86,10 +106,11 @@ function onLoad(framework) {
             feath.position.set(splinePoints1[i * featherDistrib].x, 
                                splinePoints1[i * featherDistrib].y, 
                                splinePoints1[i * featherDistrib].z);
+            var featherOrientation = lerp(-0.5,-3.0, feath.position.z / 50.0);
             feath.name = "" + i;
             var dSize = (100 - i) / 100.0; 
             feath.scale.set(featherSize * dSize,featherSize,featherSize);
-            feath.rotation.set(0 , 0 + featherOrientation , 0.1);
+            feath.rotation.set(0, featherOrientation , 0.1);
             scene.add(feath);
 
             // spline 2 
@@ -97,9 +118,10 @@ function onLoad(framework) {
             feath2.position.set(splinePoints2[i * featherDistrib].x , 
                 splinePoints2[i * featherDistrib].y - 0.3, 
                 splinePoints2[i * featherDistrib].z);
+            var featherOrientation = lerp(-0.5, -3.0, feath2.position.z / 50.0);
             feath2.name = "" + (100 + i);
             feath2.scale.set(featherSize * 1.4,featherSize * 1.4, featherSize * 1.4) ;
-            feath2.rotation.set(0 , 0 + featherOrientation, 0.1);
+            feath2.rotation.set(0, featherOrientation, 0.1);
             scene.add(feath2);
 
             // spline 3
@@ -107,12 +129,14 @@ function onLoad(framework) {
             feath3.position.set(splinePoints3[i * featherDistrib].x , 
                 splinePoints3[i * featherDistrib].y - 0.7, 
                 splinePoints3[i * featherDistrib].z);
+            var featherOrientation = lerp(-0.5,-3.0, feath3.position.z / 50.0);
             feath3.name = "" + (200 + i);
             feath3.scale.set(featherSize * 1.4,featherSize * 1.4, featherSize * 1.4) ;
-            feath3.rotation.set(0 , 0 + featherOrientation , 0.1);
+            feath3.rotation.set(0 , featherOrientation , 0.1);
             scene.add(feath3);
         }
     });
+// user data 
 //-----------------------------------------------------------------------------
 // CREATE BASIC CURVE
 var numPoints = 100;
@@ -252,7 +276,8 @@ function onUpdate(framework) {
                 }
                 // render with wind
                 else {
-                    feather.rotateY(Math.sin(x * (i % (windStrength)) / 200.0) * -(0.9 * wingFlap) * Math.PI / 90);        
+                    var displace = Math.sin(x * windStrength / (i % 100.0) * 200.0) * -(1.0 * 2.0) * Math.PI / 90;
+                    feather.rotateY(displace);        
                 }
             } 
         }
@@ -261,21 +286,3 @@ function onUpdate(framework) {
 // when the scene is done initializing, it will call onLoad, then on frame updates, call onUpdate
 Framework.init(onLoad, onUpdate);
 //-----------------------------------------------------------------------------
-// toolbox functions
-function lerp(a, b, t) {
-    return (1- a) * t + b * t; 
-}
-
-function smoothstep(a, b, x) {
-    x = clamp((x - a) / (b - a), 0.0, 1.0);
-    return x * x * (3 - 2 * x);
-}
-
-// c = centering
-// w = taper length
-function cubicPulse(c, w, x) {
-    x = Math.abs(x - c);
-    if (x > w) { return 0.0; }
-    x /= w;
-    return 1.0 - x * x * (3.0 - 2.0 * x);
-}
